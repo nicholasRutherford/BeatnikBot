@@ -44,7 +44,10 @@ def convert(update, context):
 
     # remove "/convert" from the string
     user_string = update.message.text[8:].strip()
+    send_converted_message(update, context, user_string)
 
+
+def send_converted_message(update, context, user_string):
     if len(user_string) < 1:
         return
 
@@ -83,6 +86,13 @@ def format_message(beatnik_data):
     return message
 
 
+def convert_message(update, context):
+    message_string = update.message.text.strip()
+    for blob in message_string.split():
+        if ("apple.com" in blob) or ("spotify.com" in blob) or ("google.com" in blob):
+            send_converted_message(update, context, blob)
+
+
 def main():
     """Start the bot."""
     # Create the Updater and pass it your bot's token.
@@ -97,6 +107,8 @@ def main():
     dp.add_handler(CommandHandler("start", start))
     dp.add_handler(CommandHandler("help", help))
     dp.add_handler(CommandHandler("convert", convert))
+
+    dp.add_handler(MessageHandler(Filters.text, convert_message))
 
     # log all errors
     dp.add_error_handler(error)
