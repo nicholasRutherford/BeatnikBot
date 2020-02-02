@@ -1,7 +1,10 @@
 import logging
 import os
+import telegram
 
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters
+
+from beatnik_api import get_beatnik_data
 
 
 logging.basicConfig(level=logging.DEBUG,
@@ -9,6 +12,12 @@ logging.basicConfig(level=logging.DEBUG,
 logger = logging.getLogger(__name__)
 
 TOKEN = os.environ['TELEGRAM_TOKEN']
+MESSAGE_FORMAT_STRING = """
+*{title}*
+*{artist}*
+*{album}*
+
+"""
 
 # Define a few command handlers. These usually take the two arguments update and
 # context. Error handlers also receive the raised TelegramError object in error.
@@ -34,6 +43,48 @@ def error(update, context):
     logger.warning('Update "%s" caused error "%s"', update, context.error)
 
 
+def convert(update, context):
+    # remove "/convert" from the string
+    user_string = update.message.text[8:].strip()
+
+    if len(user_string) < 1:
+        return
+
+    beatnik_data = get_beatnik_data(user_string)
+    if len(beatnik_data['errors']) > 0:
+        for error in beatnik_data['errors']:
+            logger.warning("Beatnik API returned an error:" + str(error))
+
+    message = format_message(beatnik_data)
+    context.bot.send_photo(
+        chat_id=update.effective_chat.id,
+        photo=beatnik_data['album_art'],
+        caption=message,
+        parse_mode=telegram.ParseMode.MARKDOWN
+    )
+
+
+def format_message(beatnik_data):
+    message = MESSAGE_FORMAT_STRING.format(
+        title=beatnik_data['title'],
+        artist=beatnik_data['artist'],
+        album=beatnik_data['album'],)
+
+    if not beatnik_data["apple"] is None:
+        message += "[Apple Music]({})\n".format(beatnik_data["apple"])
+
+    if not beatnik_data["gpm"] is None:
+        message += "[Google Music]({})\n".format(beatnik_data["gpm"])
+
+    if not beatnik_data["spotify"] is None:
+        message += "[Spotify]({})\n".format(beatnik_data["spotify"])
+
+    if not beatnik_data["soundcloud"] is None:
+        message += "[Soundcloud]({})\n".format(beatnik_data["soundcloud"])
+
+    return message
+
+
 def main():
     """Start the bot."""
     # Create the Updater and pass it your bot's token.
@@ -47,6 +98,7 @@ def main():
     # on different commands - answer in Telegram
     dp.add_handler(CommandHandler("start", start))
     dp.add_handler(CommandHandler("help", help))
+    dp.add_handler(CommandHandler("convert", convert))
 
     # on noncommand i.e message - echo the message on Telegram
     dp.add_handler(MessageHandler(Filters.text, echo))
