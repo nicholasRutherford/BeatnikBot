@@ -19,23 +19,19 @@ MESSAGE_FORMAT_STRING = """
 
 """
 
-# Define a few command handlers. These usually take the two arguments update and
-# context. Error handlers also receive the raised TelegramError object in error.
-
 
 def start(update, context):
     """Send a message when the command /start is issued."""
-    update.message.reply_text('Hi!')
+    update.message.reply_text(
+        'Hello! Use /convert to convert streaming music urls into other services.')
 
 
 def help(update, context):
     """Send a message when the command /help is issued."""
-    update.message.reply_text('Help!')
-
-
-def echo(update, context):
-    """Echo the user message."""
-    update.message.reply_text(update.message.text)
+    update.message.reply_text(
+        'Use /convert to convert streaming music urls into other services. For example: \n' +
+        '/convert https://open.spotify.com/track/3nGWzFBJ5tMzHWAgs16fK6?si=dXVxz7D2RIya96S1jf-7VQ'
+    )
 
 
 def error(update, context):
@@ -44,6 +40,8 @@ def error(update, context):
 
 
 def convert(update, context):
+    """Convert streaming service url into others"""
+
     # remove "/convert" from the string
     user_string = update.message.text[8:].strip()
 
@@ -99,9 +97,6 @@ def main():
     dp.add_handler(CommandHandler("start", start))
     dp.add_handler(CommandHandler("help", help))
     dp.add_handler(CommandHandler("convert", convert))
-
-    # on noncommand i.e message - echo the message on Telegram
-    dp.add_handler(MessageHandler(Filters.text, echo))
 
     # log all errors
     dp.add_error_handler(error)
