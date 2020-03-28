@@ -83,13 +83,16 @@ def format_message(beatnik_data):
     if not beatnik_data["soundcloud"] is None:
         message += "[Soundcloud]({})\n".format(beatnik_data["soundcloud"])
 
+    if not beatnik_data["tidal"] is None:
+        message += "[Tidal]({})\n".format(beatnik_data["tidal"])
+
     return message
 
 
 def convert_message(update, context):
     message_string = update.message.text.strip()
     for blob in message_string.split():
-        if ("apple.com" in blob) or ("spotify.com" in blob) or ("google.com" in blob):
+        if ("apple.com" in blob) or ("spotify.com" in blob) or ("google.com" in blob) or ("tidal.com" in blob):
             send_converted_message(update, context, blob)
 
 

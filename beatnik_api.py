@@ -32,5 +32,6 @@ def get_beatnik_data(query):
             'gpm': json_result.get('gpm'),
             'soundcloud': json_result.get('soundcloud'),
             'spotify': json_result.get('spotify'),
-            'title': json_result.get('title')
+            'title': json_result.get('title'),
+            'tidal': json_result.get('tidal')
             }
